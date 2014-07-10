@@ -2,6 +2,10 @@ class MT940::Abnamro < MT940::Base
 
   private
 
+  def parse_for_description_and_contra_account
+    sepa? ? parse_line_after_sepa : parse_line_before_sepa
+  end
+
   def parse_line_before_sepa
     @description = @line.gsub(/>\d{2}/,'').strip
     if @description.match(/^(GIRO)\s+(\d+)(.+)/)

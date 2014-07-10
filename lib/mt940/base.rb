@@ -13,8 +13,11 @@ module MT940
       @transactions, @lines = [], []
       @bank = self.class.to_s.split('::').last
       file.readlines.each do |line|
+        line.gsub!(%r{^[\r\n]|[\r\n]$}, "")     # keep leading/trailing blanks
+        next if line.blank?
+
         line.encode!('UTF-8', 'UTF-8', :invalid => :replace)
-        begin_of_line?(line) ? @lines << line : @lines[-1] += line
+        begin_of_line?(line) ? @lines << line : @lines.last << line
       end
     end
 
@@ -89,7 +92,7 @@ module MT940
     def create_transaction(match)
       type = match["debit_credit"] == "D" ? -1 : 1
       MT940::Transaction.new(bank_account: @bank_account,
-                             amount:       type * (match["amount_left"] + '.' + match["amount_right"]).to_f,
+                             amount:       type * (match["amount_left"] + "." + match["amount_right"]).to_f,
                              bank:         @bank,
                              currency:     @currency)
     end

@@ -1,7 +1,9 @@
 $:.unshift(File.dirname(__FILE__)) unless
   $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
 
+require 'active_support/all'
 require 'tempfile'
+
 require 'mt940/version'
 require 'mt940/bic_codes'
 require 'mt940/parser'

@@ -2,6 +2,10 @@ class MT940::Ing < MT940::Base
 
   private
 
+  def parse_for_description_and_contra_account
+    sepa? ? parse_line_after_sepa : parse_line_before_sepa
+  end
+
   def parse_line_before_sepa
     pattern = Regexp.new "(#{MT940::BBAN_PATTERN})(.+)"
     if @line.match(pattern)

@@ -11,26 +11,25 @@ module MT940
       file = File.open(file) if file.is_a?(String) 
       if file.is_a?(File) || file.is_a?(Tempfile)
         process(file)
-        file.close
       else
         raise NoFileGiven.new('No file is given!')
       end
+    ensure
+      file.close if file.respond_to?(:close)
     end
 
     private
 
     def process(file)
-      begin
-        bank_class = determine_bank_class(file)
-        instance   = bank_class.new(file)
-        instance.parse
-        @transactions = instance.transactions
-      rescue NoMethodError => exception
-         if exception.message == "undefined method `new' for nil:NilClass"
-          raise UnknownBank.new('Could not determine bank!') 
-        else
-          raise exception
-        end
+      bank_class = determine_bank_class(file)
+      instance = bank_class.new(file)
+      instance.parse
+      @transactions = instance.transactions
+    rescue NoMethodError => exception
+      if exception.message == "undefined method `new' for nil:NilClass"
+        raise UnknownBank.new('Could not determine bank!')
+      else
+        raise exception
       end
     end
 

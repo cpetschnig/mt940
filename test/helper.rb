@@ -1,7 +1,3 @@
-require "codeclimate-test-reporter"
-CodeClimate::TestReporter.start
-
-require 'rubygems'
 require 'bundler'
 begin
   Bundler.setup(:default, :development)
