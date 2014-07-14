@@ -2,8 +2,8 @@ class MT940::Triodos < MT940::Base
 
   private
 
-  def parse_tag_86
-    if @line.match(/^:86:000(.*)$/)
+  def parse_tag_86(line)
+    if line.match(/^:86:000(.*)$/)
       processed_description = hashify_description($1)
 
       @transaction.contra_account = if sepa?(processed_description)

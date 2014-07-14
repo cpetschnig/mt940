@@ -13,6 +13,8 @@ require 'awesome_print'
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
+require 'byebug'
+
 require 'mt940'
 
 class Test::Unit::TestCase

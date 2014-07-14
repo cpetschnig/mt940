@@ -2,7 +2,8 @@ class MT940::Rabobank < MT940::Base
 
   private
 
-  def parse_tag_25
+  def parse_bank_account(line)
+    @line = line
     @line.gsub!('.','')
     if @line.match(Regexp.new ":25:(#{MT940::IBAN_PATTERN})")
       @bank_account = $1
@@ -12,8 +13,8 @@ class MT940::Rabobank < MT940::Base
     end
   end
 
-  def parse_tag_61
-    match = super(%r{^:61:(?<value_date>\d{6})
+  def parse_transaction(line_block, pattern = nil)
+    match = super(line_block, %r{^:61:(?<value_date>\d{6})
                           (?<debit_credit>C|D)
                           (?<amount_left>\d+),(?<amount_right>\d{0,2})
                           \w{4}\w{1}
@@ -29,24 +30,24 @@ class MT940::Rabobank < MT940::Base
     end
   end
 
-  def parse_tag_86
-    if @line.match(/^:86:(.*)$/)
-      @line = $1.strip
-      @sepa ? determine_description_after_sepa : determine_description_before_sepa
+  def parse_tag_86(line)
+    if line.match(/^:86:(.*)$/)
+      line = $1.strip
+      @sepa ? determine_description_after_sepa(line) : determine_description_before_sepa(line)
       @transaction.description = @description.strip
     end
   end
 
-  def determine_description_before_sepa
+  def determine_description_before_sepa(line)
     if @description.nil? 
-      @description = @line
+      @description = line
     else
-      @description += ' ' + @line
+      @description += ' ' + line
     end
   end
 
-  def determine_description_after_sepa
-    hash = hashify_description(@line)
+  def determine_description_after_sepa(line)
+    hash = hashify_description(line)
     @description = ''
     @description += hash['NAME'] if hash['NAME']
     @description += ' '

@@ -2,7 +2,8 @@ class MT940::Ing < MT940::Base
 
   private
 
-  def parse_for_description_and_contra_account
+  def parse_for_description_and_contra_account(line)
+    @line = line
     sepa? ? parse_line_after_sepa : parse_line_before_sepa
   end
 

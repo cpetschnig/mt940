@@ -1,3 +1,9 @@
+require 'simplecov'
+SimpleCov.start 'rails' do
+  #add_filter "spec/"
+end
+
+
 require "mt940"
 
 require "pry-byebug"
