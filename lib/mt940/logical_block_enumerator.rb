@@ -49,7 +49,7 @@ module MT940
     private
 
     def start_of_block?(line)
-      line =~ %r{^(:\d{2}[A-Z]?:|:?940:?|0000\s|ABNA)}
+      line =~ %r{^(:\d{2}[A-Z]?:|:NS:|:?940:?|0000\s|ABNA)}
     end
 
     def end_of_block?(line)
@@ -77,9 +77,9 @@ module MT940
         end
 
         if start_of_block?(line) || body.empty?
-          body << line
+          body << DataBlock.new(line)
         else
-          body.last << line
+          body.last.append(line)
         end
       end
 

@@ -23,14 +23,13 @@ module MT940
 
     def parse
       LogicalBlockEnumerator.new(@lines).each do |line_block|
-        first_line = line_block.first || ""
-        tags = first_line.scan(%r{^:(\d{2}F?):}).first
-        tag = tags && tags.first
+        first_data_block = line_block.first
+        tag = first_data_block && first_data_block.tag
         case tag
           when '25'
-            parse_bank_account(first_line)
+            parse_bank_account(first_data_block)
           when '60F'
-            parse_currency(first_line)
+            parse_currency(first_data_block)
           when '61'
             parse_transaction(line_block)
             @transactions << @transaction if @transaction
@@ -46,22 +45,23 @@ module MT940
       true
     end
 
-    def parse_bank_account(line)
+    def parse_bank_account(data_block)
+      line = data_block.lines.first
       line.gsub!('.', '')
       @bank_account = $1.gsub(/^0/, '') if line.match(/^:\d{2}:[^\d]*(\d*)/)
     end
 
-    def parse_currency(line)
+    def parse_currency(data_block)
+      line = data_block.lines.first
       @currency = line[12..14]
     end
 
-    def parse_transaction(line_block, pattern = nil)
+    def parse_transaction(data_blocks, pattern = nil)
       pattern ||= %r{^:61:(?<value_date>\d{6})
                           (?<entry_date>\d{4})?
                           (?<debit_credit>C|D)
                           (?<amount_left>\d+),(?<amount_right>\d{0,2})}x
-
-      match = line_block.first.match(pattern)
+      match = data_blocks.first.one_line.match(pattern)
       if match
         @transaction = create_transaction(match)
         @transaction.date = Date.parse(match["value_date"])
@@ -69,12 +69,15 @@ module MT940
         @transaction = nil
       end
 
-      line_block[1..-1].each { |line| parse_tag_86(line) }
+      data_blocks[1..-1].each { |line| parse_tag_86(line) }
+
+      data_blocks[1..-1].each { |line| parse_tag_ns(line) }
 
       match
     end
 
-    def parse_tag_86(line)
+    def parse_tag_86(data_block)
+      line = data_block.one_line
       if line.match(/^:86:\s?(.*)$/)
         line = $1.strip
         @description, @contra_account = nil, nil
@@ -82,6 +85,14 @@ module MT940
         @transaction.contra_account = @contra_account
         @transaction.description    = @description || line
       end
+    end
+
+    def parse_tag_ns(data_block)
+      ns_data = data_block.ns_data
+      return unless ns_data
+      @transaction.description = ns_data["17"]
+      @text = (1..14).map { |number| "%02d" % number }.map { |number| ns_data[number] }.join(" ")
+      @transaction.contra_account = ns_data["33"]
     end
 
     def hashify_description(description)

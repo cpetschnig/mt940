@@ -40,7 +40,7 @@ MT940_FILE
     it "passed the right logical blocks to the Ruby block" do
       expectations_met = 0
       subject.each do |logical_block|
-        expect(logical_block).to eq data_passed_within_each[expectations_met]
+        expect(logical_block.map(&:lines).flatten).to eq data_passed_within_each[expectations_met]
         expectations_met += 1
       end
     end

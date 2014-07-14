@@ -2,7 +2,8 @@ class MT940::Triodos < MT940::Base
 
   private
 
-  def parse_tag_86(line)
+  def parse_tag_86(data_block)
+    line = data_block.one_line
     if line.match(/^:86:000(.*)$/)
       processed_description = hashify_description($1)
 
