@@ -7,7 +7,7 @@ module MT940
 
   class Base
 
-    attr_accessor :bank, :transactions
+    attr_reader :bank, :date, :start_balance, :transactions
 
     def initialize(file)
       @transactions, @lines = [], []
@@ -29,7 +29,7 @@ module MT940
           when '25'
             parse_bank_account(first_data_block)
           when '60F'
-            parse_currency(first_data_block)
+            parse_statement_info(first_data_block)
           when '61'
             parse_transaction(line_block)
             @transactions << @transaction if @transaction
@@ -51,9 +51,11 @@ module MT940
       @bank_account = $1.gsub(/^0/, '') if line.match(/^:\d{2}:[^\d]*(\d*)/)
     end
 
-    def parse_currency(data_block)
+    def parse_statement_info(data_block)
       line = data_block.lines.first
       @currency = line[12..14]
+      @date = Date.parse(line[6..12])
+      @start_balance = line[15..-1].sub(",", ".").to_f
     end
 
     def parse_transaction(data_blocks, pattern = nil)

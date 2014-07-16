@@ -1,11 +1,14 @@
 module MT940
 
-  class NoFileGiven < Exception; end
-  class UnknownBank < Exception; end
+  class BaseError < StandardError; end
+  class NoFileGiven < BaseError; end
+  class UnknownBank < BaseError; end
 
   class Parser
 
-    attr_accessor :transactions
+    attr_reader :bank
+
+    delegate :transactions, :date, :to => :bank
 
     def initialize(file)
       file = File.open(file) if file.is_a?(String) 
@@ -21,20 +24,16 @@ module MT940
     private
 
     def process(file)
-      bank_class = determine_bank_class(file)
-      instance = bank_class.new(file)
-      instance.parse
-      @transactions = instance.transactions
-    rescue NoMethodError => exception
-      if exception.message == "undefined method `new' for nil:NilClass"
-        raise UnknownBank.new('Could not determine bank!')
-      else
-        raise exception
-      end
+      bank_class = determine_bank_class(file) || raise(UnknownBank.new('Could not determine bank!'))
+      @bank = bank_class.new(file)
+      @bank.parse
     end
 
     def determine_bank_class(file)
-      first_line = file.readline
+      begin
+        first_line = file.readline
+      end until first_line.strip.present?
+
       case first_line
       when /^:940:/
         Rabobank
