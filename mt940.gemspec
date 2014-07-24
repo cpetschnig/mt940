@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   s.add_dependency 'activesupport'
+  s.add_dependency 'charlock_holmes'
 
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'shoulda'
