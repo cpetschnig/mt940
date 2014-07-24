@@ -1,3 +1,5 @@
+require 'charlock_holmes'
+
 module MT940
 
   BBAN_PATTERN     = '^\d{10}'
@@ -12,13 +14,18 @@ module MT940
     def initialize(file)
       @transactions, @lines = [], []
       @bank = self.class.to_s.split('::').last
-      file.readlines.each do |line|
-        line.gsub!(%r{^[\r\n]|[\r\n]$}, "")     # drop empty lines, but keep leading/trailing blanks
-        next if line.blank?
 
-        line.encode!('UTF-8', 'UTF-8', :invalid => :replace).gsub!(/\s{2,}/,' ')
-        @lines << line
-      end
+      content = file.read
+
+      detection = CharlockHolmes::EncodingDetector.detect(content)
+      content = CharlockHolmes::Converter.convert content, detection[:encoding], 'UTF-8'
+
+      return if content.blank?
+
+      content = content.gsub("\r\n", "\n").gsub("\r", "\n") rescue content
+
+      # empty lines are dropped by split
+      @lines = content.split("\n").map { |line| line.encode(:invalid => :replace).gsub(/\s{2,}/,' ') }
     end
 
     def parse

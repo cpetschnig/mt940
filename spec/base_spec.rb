@@ -51,6 +51,12 @@ describe MT940::Base do
       let(:expected_start_balance) { 505.25 }
 
       it_behaves_like "any tag style"
+
+      context 'when not UTF-8' do
+        let(:fixture_file) { "not_utf8.txt" }
+
+        it_behaves_like "any tag style"
+      end
     end
   end
 end
