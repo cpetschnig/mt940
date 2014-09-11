@@ -41,7 +41,7 @@ module MT940
         Ing
       when /ABNANL/
         Abnamro
-      when /^:20:/
+      else
         Triodos
       end
     end
