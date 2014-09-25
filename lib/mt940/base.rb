@@ -68,7 +68,7 @@ module MT940
     def parse_transaction(data_blocks, pattern = nil)
       pattern ||= %r{^:61:(?<value_date>\d{6})
                           (?<entry_date>\d{4})?
-                          (?<debit_credit>C|D)
+                          R?(?<debit_credit>C|D)R?
                           (?<amount_left>\d+),(?<amount_right>\d{0,2})}x
       match = data_blocks.first.one_line.match(pattern)
       if match
